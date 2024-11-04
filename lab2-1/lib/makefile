@@ -1,29 +1,39 @@
-# Makefile for creating a shared library
+# Makefile for creating a static library and linking it to the main program
 
-# 컴파일러 및 옵션 설정
-CC = gcc
-CFLAGS = -fPIC
-LIBNAME = libcalculator
+# 정적 라이브러리 이름
+LIBNAME = libcalculator.a
 
 # 오브젝트 파일 목록
-OBJS = add.o subtract.o multiply.o divide.o
+OBJS = add.o subtract.o multiply.o divide.o main.o
 
-# 라이브러리 파일 이름
-SHARED_LIB = $(LIBNAME).so.1.0.1
-SONAME = $(LIBNAME).so.1
-LINK_NAME = $(LIBNAME).so
+# 기본 목표: 라이브러리와 실행 파일 생성
+all: $(LIBNAME) main
 
-# 기본 목표: 공유 라이브러리 생성
-all: $(SHARED_LIB) $(SONAME) $(LINK_NAME)
-
-# 공유 라이브러리 생성 규칙
-$(SHARED_LIB): $(OBJS)
-	$(CC) -shared -Wl,-soname,$(SONAME) -o $@ $^
+# 정적 라이브러리 생성 규칙
+$(LIBNAME): $(OBJS)
+	ar rcs $(LIBNAME) $(OBJS)
 
 # 오브젝트 파일 생성 규칙
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+add.o: add.c
+	gcc -c add.c
+
+subtract.o: subtract.c
+	gcc -c subtract.c
+
+multiply.o: multiply.c
+	gcc -c multiply.c
+
+divide.o: divide.c
+	gcc -c divide.c
+
+# 메인 실행 파일 생성 규칙 (디버깅 심볼 포함)
+main: main.o $(LIBNAME)
+	gcc -g -I. -L. main.o -lcalculator -o main
+
+# main.o 파일 생성 규칙
+main.o: main.c
+	gcc -g -c main.c  # 여기에도 -g 플래그 추가
 
 # 클린 업 규칙
 clean:
-	rm -f $(SHARED_LIB) $(SONAME) $(LINK_NAME) $(OBJS)
+	rm -f $(LIBNAME) $(OBJS) main
